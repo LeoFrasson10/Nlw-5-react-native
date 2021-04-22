@@ -4,28 +4,16 @@ import { EnviromentButton } from '../components/EnviromentButton'
 import { Load } from '../components/Load'
 import { Header } from '../components/Header'
 import { PlanCardPrimary } from '../components/PlantCardPrimary'
-
+import { PlantProps } from '../libs/storage'
 import colors from '../styles/colors'
 import fonts from '../styles/fonts'
 
 import api from '../services/api'
+import { useNavigation } from '@react-navigation/core'
 
 interface EnviromentProps {
   key: string;
   title: string;
-}
-
-interface PlantProps {
-  id: string;
-  name: string;
-  about: string;
-  water_tips: string;
-  photo: string;
-  environments: [string];
-  frequency: {
-    times: number;
-    repeat_every: string;
-  }
 }
 
 export function PlanSelect(){
@@ -37,8 +25,8 @@ export function PlanSelect(){
   
   const [page, setPage] = useState(1)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [loadedAll, setLoadedAll] = useState(false)
 
+  const navigation = useNavigation()
   
   function handleEnviromentSelected(environment : string){
     setEnvironmentSelected(environment)
@@ -80,6 +68,10 @@ export function PlanSelect(){
     fetchPlant()
   }
 
+  function handlePlanSelect(plant: PlantProps){
+    navigation.navigate('PlantSave', { plant })
+  }
+
   useEffect(() => {
     async function fetchEnviroment() {
       const { data } = await api.get('plants_environments?_sort=title&_order=asc')
@@ -118,6 +110,7 @@ export function PlanSelect(){
         <View>
           <FlatList 
             data={environments}
+            keyExtractor={(item) => String(item.key)}
             initialNumToRender={environments.length}
             renderItem={({ item })=> 
               <EnviromentButton 
@@ -138,7 +131,13 @@ export function PlanSelect(){
         <View style={styles.plants}>
           <FlatList 
             data={filteredPlants}
-            renderItem={({ item })=> <PlanCardPrimary data={item} />}          
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item })=> (
+              <PlanCardPrimary 
+                data={item} 
+                onPress={() => handlePlanSelect(item)} 
+              />
+            )}          
             showsVerticalScrollIndicator={false}
             numColumns={2}
             contentContainerStyle={styles.contentContainerStyle}

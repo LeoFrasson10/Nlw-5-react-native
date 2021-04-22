@@ -9,8 +9,11 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Platform,
-  Keyboard
+  Keyboard,
+  Alert,
 } from 'react-native'
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { Button } from '../components/Button'
 
@@ -32,14 +35,29 @@ export function UserIdentification(){
     setIsfocused(true)
   }, [])
 
-  const handleInputChange = useCallback((value: String) => {
+  const handleInputChange = useCallback((value: string) => {
     setIsFilled(!!value)
     setName(value)
   }, [])  
 
-  const handleSubmit = useCallback(() => {
-    navigation.navigate('Confirmation')
-  }, [])
+  const handleSubmit = useCallback(async () => {
+    if(!name){
+      return Alert.alert('Me diz como chamar você ')
+    }
+    try {      
+      await AsyncStorage.setItem('@plantmanager:user', name)  
+      navigation.navigate('Confirmation', {
+        title: 'Prontinho',
+        subTitle: 'Agora vamos começar a cuidar das suas plantinhas com muito cuidado.',
+        buttonTitle: 'Começar',
+        icon: 'smile',
+        nextScreen: 'PlantSelect'
+      })
+
+    } catch {
+      Alert.alert('Não foi possível salvar seu nome')
+    }
+  }, [name])
 
   return (
     <SafeAreaView style={styles.container}>
